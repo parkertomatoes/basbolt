@@ -1,0 +1,72 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+h1 {
+    margin: 0;
+    padding: 0;
+}
+
+h1, em, .dock-tab {
+    font-family: sans-serif;
+}
+
+#app {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 100%;
+}
+
+#root > .dock-layout {
+    min-height: 100%;
+}
+
+.sourceError {
+    text-decoration: underline red wavy;
+}
+
+.blockColor0 {
+    opacity: 0.5;
+    background: #c9e4de;
+}
+.blockColor1 {
+    opacity: 0.5;
+    background: #c6def1;
+}
+.blockColor2 {
+    opacity: 0.5;
+    background: #faedcb;
+}
+.blockColor3 {
+    opacity: 0.5;
+    background: #dbcdf0;
+}
+.blockColor4 {
+    opacity: 0.5;
+    background: #f7d9c4;
+}
+.blockColor5 {
+    opacity: 0.5;
+    background: #f2c6de;
+}
+.blockColor6 {
+    opacity: 0.5;
+    background: #e2cfc4;
+}
+.blockColor7 {
+    opacity: 0.5;
+    background: #f9c6c9;
+}
+.blockColor8 {
+    opacity: 0.5;
+    background: #d2d2cf;
+}
+.blockColor9 {
+    opacity: 0.5;
+    background: #e2e2df;
+}
+  
+div.hover-row.status-bar {
+    display: none !important;
+  }
