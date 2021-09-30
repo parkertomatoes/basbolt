@@ -1,7 +1,8 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { useRef, useEffect } from 'react';
-import MonacoEditor from 'react-monaco-editor';
+import { useRef, useEffect, useState } from 'react';
 import { compile } from '../actions';
+
+const MonacoEditor = monaco_react.default;
 
 function getSourceDecorations(asm, Range) {
     if (!asm || asm.errors.length > 0) {
@@ -44,8 +45,11 @@ export default function Editor({ parentDomNode }) {
   const asm = useSelector(({ asm }) => asm);
   const monacoRef = useRef(null);
   const decorRef = useRef([]);
+  const [editorReady, setEditorReady] = useState(false);
 
   useEffect(() => {
+    if (!monacoRef.current)
+      return;
     const { editor, monaco } = monacoRef.current;
 
     // ASM block highlighting
@@ -59,7 +63,7 @@ export default function Editor({ parentDomNode }) {
     const model = editor.getModel();
     const errors = getErrorMarkers(asm);
     monaco.editor.setModelMarkers(model, 'BC', errors);
-  }, [asm]);
+  }, [asm, editorReady]);
 
   const options = {
     selectOnLineNumbers: true,
@@ -73,8 +77,9 @@ export default function Editor({ parentDomNode }) {
       theme="vs-light"
       options={options}
       onChange={newValue => dispatch(compile(newValue))}
-      editorDidMount={(editor, monaco) => {
+      onMount={(editor, monaco) => {
         monacoRef.current = { editor, monaco };
+        setEditorReady(true);
         const model = monaco.editor.createModel("", "vb");
         model.setEOL(1);
         editor.setModel(model);

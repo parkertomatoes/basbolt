@@ -1,5 +1,4 @@
 const path = require('path');
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
@@ -37,49 +36,6 @@ module.exports = {
 		]
 	},
 	plugins: [
-		new MonacoWebpackPlugin({ languages: ['vb'], features: [
-			"!codelens",
-			"!quickCommand",
-			"!quickOutline",
-			"!referenceSearch",
-			"!contextmenu",
-			"!inspectTokens",
-			"!snippets",
-
-			/*
-			"!accessibilityHelp",
-			"!bracketMatching",
-			"!caretOperations",
-			"!clipboard",
-			"!codeAction",
-			"!colorDetector",
-			"!comment",
-			"!cursorUndo",
-			"!dnd",
-			"!folding",
-			"!fontZoom",
-			"!format",
-			"!gotoError",
-			"!gotoLine",
-			"!gotoSymbol",
-			"!hover",
-			"!iPadShowKeyboard",
-			"!inPlaceReplace",
-			"!linesOperations",
-			"!links",
-			"!multicursor",
-			"!parameterHints",
-			"!rename",
-			"!smartSelect",
-			"!suggest",
-			"!toggleHighContrast",
-			"!toggleTabFocusMode",
-			"!transpose",
-			"!wordHighlighter",
-			"!wordOperations",
-			"!wordPartOperations",
-			*/
-		] }),
 		new CopyPlugin({
 			patterns: [
 				{ from: './index.html', to: '' },
@@ -93,5 +49,10 @@ module.exports = {
 		new HtmlWebpackPlugin({
 			template: './index.html'
 		})
-	]
+	],
+	externals: {
+	  'react': 'React',
+	  'react-dom': 'ReactDOM',
+	  'prop-types': 'PropTypes'
+	}
 };

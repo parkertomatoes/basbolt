@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
-import { useRef, useEffect } from 'react';
-import MonacoEditor from 'react-monaco-editor';
+import { useRef, useEffect, useState } from 'react';
+const MonacoEditor = monaco_react.default;
 
 const options = {
   selectOnLineNumbers: true,
@@ -58,17 +58,20 @@ function getDecorations(asm, Range) {
 
 export default function AsmView() {
   const asm = useSelector(({ asm }) => asm);
+  const [editorReady, setEditorReady] = useState(false);
   const monacoRef = useRef(null);
   const decorRef = useRef([]);
 
   useEffect(() => {
+    if (!monacoRef.current) 
+      return;
     const { editor, monaco } = monacoRef.current;
     const oldDecor = decorRef.current;
     const newDecor = getDecorations(asm, monaco.Range);
     if (oldDecor.length > 0 || newDecor.length > 0) {
       decorRef.current = editor.deltaDecorations(oldDecor, newDecor);
     }
-  }, [asm]);
+  }, [asm, editorReady]);
 
   const { language, value } = getContent(asm);
 
@@ -78,7 +81,10 @@ export default function AsmView() {
       options={options}
       language={language}
       value={value}
-      editorDidMount={(editor, monaco) => monacoRef.current = { editor, monaco }}
+      onMount={(editor, monaco) => { 
+        monacoRef.current = { editor, monaco }; 
+        setEditorReady(true); 
+      }}
     />
   );
 }
