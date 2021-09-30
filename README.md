@@ -5,11 +5,13 @@ BasBolt is an in-browser compiler explorer for QuickBASIC. It automatically
 compiles code into 16-bit assembly using Microsoft BASIC Compiler as you type, 
 and integrates the results into the editor.
 
-Shows generated assembly, colored to identify source code regions
+It shows generated assembly, colored to identify source code regions
 ![inline errors screenshot](doc/nibbles.png)
 
-As well as marks errors in the source code:
+It also marks errors in the source code:
 ![inline errors screenshot](doc/error.png)
+
+[Live Demo](https://parkertomatoes.github.io/basbolt/)
 
 ## How It Works
 The editor keeps a [V86 emulator](https://copy.sh/v86) instance in the background, running a small server on FreeDOS to facilitate communication. The server written in QuickBASIC (of course). 
