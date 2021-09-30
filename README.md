@@ -23,9 +23,8 @@ Whenever the code in the editor changes:
 
  ### Transferring Files
 
-V86 doesn't have an API to access FAT16 disks, but file transfer is made possible using a shared memory buffer. 
+V86 doesn't have an API to access FAT disks, but file transfer is made possible by reading and writing to the emulated system's RAM: 
 ![compilation flow](doc/compilation.png)
-
 
 Since 16-bit real mode DOS doesn't concern itself about any silly nonsense like virtual memory protection, The server can just allocate a buffer, do a little arithmetic with the segment and offset, and write the physical address to the console:
 ```basic
@@ -44,13 +43,15 @@ Which prints something like this, redirected to COM1:
 ``` 
 (buffer 123456, size: 16384)
 ```
+The compilation server code can be found in [another repostiory](https://github.com/parkertomatoes/basbolt-image)
 
-The editor reads the pointer using the V86's serial API. V86 is written in surprisingly legible Javascript, and allocates emulated system RAM in a [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array). By hacking V86 to expose that array, and taking a subarray of that array starting at the buffer address...
+The editor reads the pointer using the V86's serial API. V86 also has a convenient API to read and write blocks of memory in the emulated system:
 
 ```javascript
-buffer = emulator.get_mem().subarray(address, address + size)
+const bytes = emulator.read_memory(address, size);
+emulator.write_memory(bytes, address);
 ```
-...the editor can transfer data directly into the server's buffer. 16KB blocks are written at one time, sending a byte over COM1 to signal the data is ready to copied, and waiting for a byte over COM1 to signal that the server is ready for more data. In formal CS literature, this transaction is called a podunk direct memory access (PDMA) transfer.
+Since the RAM is implemented as a `Uint8Array`, and `read_memory` is implemented with `UInt8Array.prototype.subarray`, we can effectively access shared memory. 16KB blocks are written at one time. A byte is sent over COM1 to signal that the data is ready to copied, and a message is sent back over COM1 to signal that the server is ready for more data. In formal CS literature, this transaction is called a podunk direct memory access (PDMA) transfer.
 
 ### Compiling 
 
@@ -82,7 +83,7 @@ Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10
     0 Warning Error(s)
     1 Severe  Error(s)
 ```
-_yes, it's paginated and formatted for your dot matrix printer_
+_yes, it's paginated and formatted to 80 characters for your dot matrix printer_
 
 Errors and assembly don't include any explicit line numbers and columns. But by counting lines of code, and spaces between the start of the line and the "^" for errors, the line and column of errors can be determined. The listing file is parsed using a combination of regular expressions and a simple state machine.
 
@@ -90,46 +91,18 @@ The assembly mappings in the listing files are not as fine-grained as the ones g
 
 ## Building 
 
-### 1. Obtaining BIOS Images
+### 1. Add BIOS Images
 For X86 emulation with V86, a BIOS image is required to function:
- * [SeaBIOS](https://www.seabios.org/downloads/) is used as the bios
- * [Bochs VGABios](http://www.nongnu.org/vgabios/#DOWNLOAD) is used as the VGA bios
+ * [SeaBIOS](https://www.seabios.org/downloads/) is used as the bios, and should be placed in `images/seabios.bin`
+ * [Bochs VGABios](http://www.nongnu.org/vgabios/#DOWNLOAD) is used as the VGA bios, and should be placed in `images/vgabios.bin`
 
-### 2. Setting Up The Boot Disk
-Get a FreeDOS boot disk from the [official website](http://www.freedos.org/download/). It is not distributed here because its license (GPLv2) is incompatible with this project's (MIT). 
+### 2. Build the compilation server
+A hard disk image containing the compilation server must be built. It can be found here:
+https://github.com/parkertomatoes/basbolt-image
 
-Add the following command to `AUTOEXEC.BAT` to launch the server, and redirect its input and output to COM1:
-```
-D:\SERVER.EXE<COM1>COM1
-```
+Run the makefile in that repository to build `basbolt.img`, then copy it to `images/basbolt.img`.
 
-### 3. Setting Up The CD-ROM Image
- `SERVER.EXE` is the server and its source can be found in this repository. It can be built with QuickBASIC 4.5 using the following commands in either DosBox or FreeDOS:
-  ```
-  BC.EXE /O SERVER.BAS SERVER.OBJ NUL
-  LINK.EXE SERVER.OBJ,SERVER.EXE,NUL,BCOM45.LIB,NUL
-  ```
-
-`basbolt.iso` is a CD-ROM with:
- * BC.EXE and BCOM45.LIB included at `D:\QB45`. 
- * SERVER.EXE included at `D:\`
- 
- ISO creation software is available on all major platforms:
- * [Linux instructions](https://askubuntu.com/questions/136165/how-to-create-an-iso-image-from-a-bunch-of-files-on-the-file-system)
- * [Infrarecorder (Windows)](http://infrarecorder.org/)
- * [MacOS instructions](https://support.apple.com/guide/disk-utility/create-a-disk-image-dskutl11888/mac)
-
-DISCLAIMER: QuickBASIC is a registered trademark of Microsoft and the original software is protected under copyright. Distribute at your own risk. I consider this project to be fair use under US law because:
- * It is transformative, educational, historical, and non-commercial
- * It only uses a small portion of the copyrighted work (the compiler)
- * QuickBASIC has not been sold or supported for several decades, and its trademark is not in active use
- * Microsoft's equivalent current product, [Roslyn](https://github.com/dotnet/roslyn), is free and open source under an MIT license
- 
- If you are from Microsoft's legal department and object to this interpretation, please send me a threatening legal-sounding letter and I will be in contact to fold like a wet paper bag.
-
-Place `basbolt.iso`, `seabios.bin`, and `vgabios.bin` under `/images`, 
-
-### 4. Building
+### 3. Building
 
 The project is packaged with npm and webpack, and can be built using the following commands:
 ```
@@ -141,7 +114,7 @@ If the bundling is successful, the contents of `/dist` can be deployed to any we
 ## Roadmap
 This project is currently a fun tech demo that started as a joke, and was written as a way for me to practice writing a semi-complex project using React Hooks. 
 
-But it would be neat to make something like a tweakable sandbox for showcasing old Q(uick)?BASIC games and demos. Eventual features would include 
+But it would be neat to make something like a tweakable sandbox for showcasing old Q(uick)?BASIC games and demos. Eventual features could include 
 
 * Linking
 * Running
@@ -150,6 +123,5 @@ But it would be neat to make something like a tweakable sandbox for showcasing o
 * Multiple compilers (QB 1-4, PDS 7.1, VBDOS 1.0, etc)
 * In-app help, etc
 
-
 ## Contributing
-Are you of sound mind? And want to contribute? Welcome to that very narrow middle of that Venn diagram, friend. I would happily review issues or pull requests.
+Are you of sound mind? And want to contribute? Welcome to that very narrow middle of that Venn diagram, friend. I'll happily review any issues or pull requests.

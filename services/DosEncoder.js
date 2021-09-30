@@ -16,7 +16,7 @@ export function encode(text) {
         } else {
             const cp437Code = encodeMap[c];
             if (cp437Code === undefined) {
-                throw new Error(`cannot encode '${char}' for DOS (CP437)`);
+                throw new Error(`cannot encode '${c}' (code ${code}) for DOS (CP437)`);
             }
             result[i] = cp437Code;
         }

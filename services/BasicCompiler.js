@@ -82,7 +82,10 @@ export default class BasicCompiler {
             screen_container: this.container,
             bios: { url: "seabios.bin" },
             vga_bios: { url: "vgabios.bin" },
-            hda: { "url": "basbolt.img", async: true, size: 32 * 1024 * 1024  },
+            hda: { 
+                "url": "basbolt.img",
+                "async": true
+            },
             autostart: true,
         });
 
@@ -100,7 +103,8 @@ export default class BasicCompiler {
                 }
                 const address = Number(bufferMatch[1]);
                 const size = Number(bufferMatch[2]);
-                this.buffer = this.emulator.get_mem().subarray(address, address + size);
+                this.bufferAddress = address;
+                this.bufferSize = size;
             }
         );
         this.compileQueue = new CompileQueue();
@@ -114,6 +118,13 @@ export default class BasicCompiler {
 
     }
 
+    writeBuffer(bytes) {
+        this.emulator.write_memory(bytes, this.bufferAddress);
+    }
+
+    readBuffer() {
+        return this.emulator.read_memory(this.bufferAddress, this.bufferSize);
+    }
 
     compile(code) {
         if (code.length === 0) {
@@ -125,15 +136,13 @@ export default class BasicCompiler {
                 this.emulator.serial0_send(`compile\nC:\\JOB.BAS\n${code.length}\n`);
             }, 'ready\r\n');
 
-            const memory = this.emulator.get_mem();
-
             // send source
             const codeBuffer = encode(code);
-            for (let i = 0; i < codeBuffer.length; i += this.buffer.length) {
+            for (let i = 0; i < codeBuffer.length; i += this.bufferSize) {
                 const remaining = codeBuffer.length - i;
-                const blockLength = Math.min(remaining, this.buffer.length);
-                this.buffer.set(codeBuffer.subarray(i, i + blockLength));
-                const sentinel = remaining > this.buffer.length 
+                const blockLength = Math.min(remaining, this.bufferSize);
+                this.writeBuffer(codeBuffer.subarray(i, i + blockLength));
+                const sentinel = remaining > this.bufferSize 
                     ? 'ready\r\n' 
                     : 'received\r\n';
                 await this.serial.queue(() => {
@@ -142,7 +151,7 @@ export default class BasicCompiler {
             }
 
             // wait for compilation
-            const stdout = await this.serial.queue(() => { }, 'done\r\n');
+            const stdout = await this.serial.queue(() => { }, 'done\r\nready\r\n');
             const sizeMatch = /\(size (\d+)\)/g.exec(stdout);
             if (sizeMatch === null) {
                 throw new Error(`Unexpected output: '${stdout}'`);
@@ -150,11 +159,10 @@ export default class BasicCompiler {
             const lstBuffer = new Uint8Array(Number(sizeMatch[1]));
 
             // receive list file, last "ready" is main prompt
-            await this.serial.queue(() => { }, 'ready\r\n');
-            for (let i = 0; i < lstBuffer.length; i += this.buffer.length) {
+            for (let i = 0; i < lstBuffer.length; i += this.bufferSize) {
                 const remaining = lstBuffer.length - i;
-                const blockLength = Math.min(remaining, this.buffer.length);
-                lstBuffer.set(this.buffer.subarray(0, blockLength), i);
+                const blockLength = Math.min(remaining, this.bufferSize);
+                lstBuffer.set(this.readBuffer().subarray(0, blockLength), i);
                 await this.serial.queue(() => {
                     this.emulator.serial0_send('a');
                 }, 'ready\r\n');

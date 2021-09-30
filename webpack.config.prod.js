@@ -1,4 +1,4 @@
-const common = require('webpack.config.common');
+const common = require('./webpack.config.common');
  const { merge } = require('webpack-merge');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const TerserPlugin = require("terser-webpack-plugin"); 

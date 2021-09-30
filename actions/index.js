@@ -6,9 +6,9 @@ export function updateAsm(asm) {
 }
 
 export function compile(code) {
-  return async (dispatch, getState, { compiler }) => {
+  return async (dispatch, _, { compiler }) => {
     const result = await compiler.compile(code);
-    if (!result.canceled) {
+    if (!result.canceled && result.lst) {
       const asm = parseLst(result.lst);
       dispatch(updateAsm(asm));
     }

@@ -86,8 +86,8 @@ module.exports = {
 				{ from: './images/basbolt.img', to: '' },
 				{ from: './images/seabios.bin', to: '' },
 				{ from: './images/vgabios.bin', to: '' },
-				{ from: './services/libv86.js', to: '' }
-
+				{ from: './v86/libv86.js', to: '' },
+				{ from: './v86/v86.wasm', to: 'build' }
 			]
 		}),
 		new HtmlWebpackPlugin({
