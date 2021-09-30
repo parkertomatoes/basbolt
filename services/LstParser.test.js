@@ -110,16 +110,16 @@ Offset  Data    Source Line           Microsoft (R) BASIC Compiler Version 7.10\
     0 Severe  Error(s)`;
 
 test('parses correctly', () => {
-    const lst = parseLst(source);
-    lst.length > 0;
-    expect(lst[0].offset).toBe(48);
-    expect(lst[0].data).toBe(6);
-    expect(lst[0].text.length).toBeGreaterThan(0);
-    expect(lst[0].asm.length).toBe(0);
-    expect(lst[1].offset).toBe(48);
-    expect(lst[1].data).toBe(6);
-    expect(lst[0].text.length).toBeGreaterThan(0);
-    expect(lst[0].asm.length).toBe(0);
+  const lst = parseLst(source);
+  lst.length > 0;
+  expect(lst[0].offset).toBe(48);
+  expect(lst[0].data).toBe(6);
+  expect(lst[0].text.length).toBeGreaterThan(0);
+  expect(lst[0].asm.length).toBe(0);
+  expect(lst[1].offset).toBe(48);
+  expect(lst[1].data).toBe(6);
+  expect(lst[0].text.length).toBeGreaterThan(0);
+  expect(lst[0].asm.length).toBe(0);
 });
 
 const sourceWrap = `                                                                      PAGE   1\r
