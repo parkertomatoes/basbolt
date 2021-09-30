@@ -18,6 +18,10 @@ h1, em, .dock-tab {
     min-height: 100%;
 }
 
+#header {
+    padding: 1em;
+}
+
 #root > .dock-layout {
     min-height: 100%;
 }
