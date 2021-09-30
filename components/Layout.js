@@ -43,7 +43,10 @@ export default function Layout() {
                     id,
                     cached: true,
                     title: 'editor',
-                    content: <Editor parentDomNode={editorParent.current} />
+                    content: <Editor 
+                                parentDomNode={editorParent.current} 
+                                defaultSource={`PRINT "HELLO WORLD!"`}
+                            />
                 }
             
             case 'asm':

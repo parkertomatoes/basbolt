@@ -40,7 +40,7 @@ function getErrorMarkers(asm) {
   }));
 }
 
-export default function Editor({ parentDomNode }) {
+export default function Editor({ parentDomNode, defaultSource }) {
   const dispatch = useDispatch();
   const asm = useSelector(({ asm }) => asm);
   const monacoRef = useRef(null);
@@ -48,6 +48,12 @@ export default function Editor({ parentDomNode }) {
   const [editorReady, setEditorReady] = useState(false);
 
   useEffect(() => {
+    // Effect: compile default source
+    dispatch(compile(defaultSource));
+  }, []);
+
+  useEffect(() => {
+    // Effect: assembly has updated
     if (!monacoRef.current)
       return;
     const { editor, monaco } = monacoRef.current;
@@ -76,11 +82,12 @@ export default function Editor({ parentDomNode }) {
     <MonacoEditor
       theme="vs-light"
       options={options}
+      defaultValue={defaultSource}
       onChange={newValue => dispatch(compile(newValue))}
       onMount={(editor, monaco) => {
         monacoRef.current = { editor, monaco };
         setEditorReady(true);
-        const model = monaco.editor.createModel("", "vb");
+        const model = monaco.editor.createModel(defaultSource, "vb");
         model.setEOL(1);
         editor.setModel(model);
         
