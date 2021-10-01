@@ -31,13 +31,6 @@ export default function Layout() {
 
   const loadTab = ({ id }) => {
     switch(id) {
-      case 'files':
-        return {
-          id,
-          title: 'files',
-          content: <div>Hello</div>
-        };
-      
       case 'editor':
         return {
           id,

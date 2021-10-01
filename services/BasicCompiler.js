@@ -125,49 +125,56 @@ export default class BasicCompiler {
     return this.emulator.read_memory(this.bufferAddress, this.bufferSize);
   }
 
-  compile(code) {
+  compile(code, options) {
     if (code.length === 0) {
       return { lines: [], blocks: [], errors: [] };
     }
 
     return this.compileQueue.queue(async () => {
-      await this.serial.queue(() => {
-        this.emulator.serial0_send(`compile\nC:\\JOB.BAS\n${code.length}\n`);
-      }, 'ready\r\n');
-
-      // send source
-      const codeBuffer = encode(code);
-      for (let i = 0; i < codeBuffer.length; i += this.bufferSize) {
-        const remaining = codeBuffer.length - i;
-        const blockLength = Math.min(remaining, this.bufferSize);
-        this.writeBuffer(codeBuffer.subarray(i, i + blockLength));
-        const sentinel = remaining > this.bufferSize 
-          ? 'ready\r\n' 
-          : 'received\r\n';
+      if (options && options.onBegin)
+        options.onBegin();
+      try {
         await this.serial.queue(() => {
-          this.emulator.serial0_send('a');
-        }, sentinel);
-      }
-
-      // wait for compilation
-      const stdout = await this.serial.queue(() => { }, 'done\r\nready\r\n');
-      const sizeMatch = /\(size (\d+)\)/g.exec(stdout);
-      if (sizeMatch === null) {
-        throw new Error(`Unexpected output: '${stdout}'`);
-      }
-      const lstBuffer = new Uint8Array(Number(sizeMatch[1]));
-
-      // receive list file, last "ready" is main prompt
-      for (let i = 0; i < lstBuffer.length; i += this.bufferSize) {
-        const remaining = lstBuffer.length - i;
-        const blockLength = Math.min(remaining, this.bufferSize);
-        lstBuffer.set(this.readBuffer().subarray(0, blockLength), i);
-        await this.serial.queue(() => {
-          this.emulator.serial0_send('a');
+          this.emulator.serial0_send(`compile\nC:\\JOB.BAS\n${code.length}\n`);
         }, 'ready\r\n');
+
+        // send source
+        const codeBuffer = encode(code);
+        for (let i = 0; i < codeBuffer.length; i += this.bufferSize) {
+          const remaining = codeBuffer.length - i;
+          const blockLength = Math.min(remaining, this.bufferSize);
+          this.writeBuffer(codeBuffer.subarray(i, i + blockLength));
+          const sentinel = remaining > this.bufferSize 
+            ? 'ready\r\n' 
+            : 'received\r\n';
+          await this.serial.queue(() => {
+            this.emulator.serial0_send('a');
+          }, sentinel);
+        }
+
+        // wait for compilation
+        const stdout = await this.serial.queue(() => { }, 'done\r\nready\r\n');
+        const sizeMatch = /\(size (\d+)\)/g.exec(stdout);
+        if (sizeMatch === null) {
+          throw new Error(`Unexpected output: '${stdout}'`);
+        }
+        const lstBuffer = new Uint8Array(Number(sizeMatch[1]));
+
+        // receive list file, last "ready" is main prompt
+        for (let i = 0; i < lstBuffer.length; i += this.bufferSize) {
+          const remaining = lstBuffer.length - i;
+          const blockLength = Math.min(remaining, this.bufferSize);
+          lstBuffer.set(this.readBuffer().subarray(0, blockLength), i);
+          await this.serial.queue(() => {
+            this.emulator.serial0_send('a');
+          }, 'ready\r\n');
+        }
+        const lst = decode(lstBuffer);
+        return { lst }
+      } finally {
+        if (options && options.onEnd) 
+          options.onEnd();
       }
-      const lst = decode(lstBuffer);
-      return { lst }
     });
   }
 

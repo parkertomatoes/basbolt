@@ -1,13 +1,25 @@
 import parseLst from '../services/LstParser';
-import { UPDATE_ASM, OPEN_HELP } from './types';
+import { UPDATE_ASM, OPEN_HELP, START_COMPILE, STOP_COMPILE } from './types';
 
 export function updateAsm(asm) {
   return { type: UPDATE_ASM, asm };
 }
 
+function startCompile() {
+  return { type: START_COMPILE };
+}
+
+function stopCompile() {
+  return { type: STOP_COMPILE };
+}
+
 export function compile(code) {
   return async (dispatch, _, { compiler }) => {
-    const result = await compiler.compile(code);
+    const options = {
+      onBegin: () => dispatch(startCompile()),
+      onEnd: () => dispatch(stopCompile())
+    };
+    const result = await compiler.compile(code, options);
     if (!result.canceled && result.lst) {
       const asm = parseLst(result.lst);
       dispatch(updateAsm(asm));
