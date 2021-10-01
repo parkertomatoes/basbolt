@@ -71,7 +71,7 @@ export default class BasicCompiler {
     text.style.cssText = "white-space: pre; font: 14px monospace; line-height: 14px";
     this.container.appendChild(text);
     const canvas = document.createElement('canvas');
-    canvas.style.display = 'none';
+    this.container.style.display = 'none';
     this.container.appendChild(canvas);
     document.body.appendChild(this.container);
 

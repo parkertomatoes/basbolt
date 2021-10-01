@@ -1,29 +1,29 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useRef, useEffect, useState } from 'react';
-import { compile } from '../actions';
+import { compile, openHelp } from '../actions';
 
 const MonacoEditor = monaco_react.default;
 
 function getSourceDecorations(asm, Range) {
-    if (!asm || asm.errors.length > 0) {
-        return [];
-    }
+  if (!asm || asm.errors.length > 0) {
+    return [];
+  }
 
-    let blockId = 0;
-    return asm.blocks.flatMap(block => {
-        if (block.asm.length == 0) {
-            return [];
-        }
-        const [minLine, maxLine] = block.lines;
-        const range = new Range(minLine, 1, maxLine, 1);
-        return [{
-            range,
-            options: {
-                isWholeLine: true,
-                className: `blockColor${blockId++ % 10}`
-            }
-        }];
-    });
+  let blockId = 0;
+  return asm.blocks.flatMap(block => {
+    if (block.asm.length == 0) {
+      return [];
+    }
+    const [minLine, maxLine] = block.lines;
+    const range = new Range(minLine, 1, maxLine, 1);
+    return [{
+      range,
+      options: {
+        isWholeLine: true,
+        className: `blockColor${blockId++ % 10}`
+      }
+    }];
+  });
 }
 
 function getErrorMarkers(asm) {
@@ -40,7 +40,7 @@ function getErrorMarkers(asm) {
   }));
 }
 
-export default function Editor({ parentDomNode, defaultSource }) {
+export default function Editor({ defaultSource }) {
   const dispatch = useDispatch();
   const asm = useSelector(({ asm }) => asm);
   const monacoRef = useRef(null);
@@ -48,12 +48,12 @@ export default function Editor({ parentDomNode, defaultSource }) {
   const [editorReady, setEditorReady] = useState(false);
 
   useEffect(() => {
-    // Effect: compile default source
+    // Effect: component has mounted, compile default source
     dispatch(compile(defaultSource));
   }, []);
 
   useEffect(() => {
-    // Effect: assembly has updated
+    // Effect: assembly has updated, update monaco decorations to highlight code
     if (!monacoRef.current)
       return;
     const { editor, monaco } = monacoRef.current;
@@ -91,14 +91,22 @@ export default function Editor({ parentDomNode, defaultSource }) {
         model.setEOL(1);
         editor.setModel(model);
         
+        editor.addCommand(monaco.KeyCode.F1, function() {
+          const position = editor.getPosition();
+          const word = editor.getModel().getWordAtPosition(position);
+          dispatch(openHelp(word ? word.word : ''));
+        }, '');
+        
         for (const styleElement of document.getElementsByTagName('style')) {
           if (styleElement.innerHTML.includes('.monaco-editor .monaco-hover')) {
             styleElement.innerHTML = styleElement.innerHTML.replaceAll('.monaco-editor .monaco-hover', '.monaco-hover');
           }
           if (styleElement.innerHTML.includes('.monaco-editor .monaco-editor-overlay-message')) {
             styleElement.innerHTML = styleElement.innerHTML.replaceAll('.monaco-editor .monaco-editor-overlay-message', '.monaco-hover');
-          }        }
+          }
+        }
       }}
+      
     />
   );
 }

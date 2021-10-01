@@ -11,7 +11,7 @@ It shows generated assembly, colored to identify source code regions
 It also marks errors in the source code:
 ![inline errors screenshot](doc/error.png)
 
-[Live Demo](https://parkertomatoes.github.io/basbolt/)
+[Live Demo](https://parkertomatoes.github.io/basbolt/) - for a bonus, click a keyword and press F1!
 
 ## How It Works
 The editor keeps a [V86 emulator](https://copy.sh/v86) instance in the background, running a small server on FreeDOS to facilitate communication. The server written in QuickBASIC (of course). 
