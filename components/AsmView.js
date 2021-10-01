@@ -8,6 +8,7 @@ const options = {
   readOnly: true
 };
 
+// Extract textual content from compilation output
 function getContent(asm) {
   if (asm === null) {
     return {
@@ -33,6 +34,7 @@ function getContent(asm) {
   }
 }
 
+// Extract block coloring from compilation output
 function getDecorations(asm, Range) {
   if (!asm || asm.errors.length > 0) {
     return [];
@@ -56,13 +58,42 @@ function getDecorations(asm, Range) {
   });
 }
 
+// Hook to animate a message with "..." at periodic intervals if a boolean state is active
+function useElipsisTimer(isActive, message) {
+  const [messageWithEllipsis, setMessageWithEllipsis] = useState(message);
+  const intervalRef = useRef(null);
+
+  const clearIntervalRef = () => {
+    if (intervalRef.current !== null) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+  useEffect(() => {
+    clearIntervalRef();
+    if (isActive) {
+      let busyCounter = 0;
+      intervalRef.current = setInterval(() => {
+        busyCounter = (busyCounter + 1) & 3;
+        setMessageWithEllipsis(message + '.'.repeat(busyCounter));
+      }, 333);
+    }
+    return clearIntervalRef;
+  }, [isActive]);
+
+  return messageWithEllipsis;
+}
+
 export default function AsmView() {
   const asm = useSelector(({ asm }) => asm);
+  const isCompiling = useSelector(({ isCompiling }) => isCompiling);
+  const compilingMessage = useElipsisTimer(isCompiling, 'Compiling')
   const [editorReady, setEditorReady] = useState(false);
   const monacoRef = useRef(null);
   const decorRef = useRef([]);
 
   useEffect(() => {
+    // Color code blocks after the list file is updated
     if (!monacoRef.current) 
       return;
     const { editor, monaco } = monacoRef.current;
@@ -76,15 +107,18 @@ export default function AsmView() {
   const { language, value } = getContent(asm);
 
   return (
-    <MonacoEditor
-      theme="vs-light"
-      options={options}
-      language={language}
-      value={value}
-      onMount={(editor, monaco) => { 
-        monacoRef.current = { editor, monaco }; 
-        setEditorReady(true); 
-      }}
-    />
+    <div className="asm-view">
+      { isCompiling && <div className="asm-view-compiling">{compilingMessage}</div> }
+      <MonacoEditor
+        theme="vs-light"
+        options={options}
+        language={language}
+        value={value}
+        onMount={(editor, monaco) => { 
+          monacoRef.current = { editor, monaco }; 
+          setEditorReady(true); 
+        }}
+      />
+    </div>
   );
 }

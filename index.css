@@ -31,6 +31,28 @@ h1, em, .dock-tab {
   height: 100%;
 }
 
+.asm-view {
+  display: grid;
+  height: 100%;
+  grid-template-rows: auto 1fr;
+  grid-template-areas: 
+    "compiling-message"
+    "asm-blocks";
+}
+
+.asm-view-compiling {
+  grid-area: compiling-message;
+  text-align: center;
+  padding: 1em;
+  font: 12px sans-serif;
+  color: gray;
+  background-color: #fafafd;
+}
+
+.asm-view > :last-child {
+  grid-area: asm-blocks;
+}
+
 .sourceError {
   text-decoration: underline red wavy;
 }

@@ -1,12 +1,19 @@
-import { UPDATE_ASM, OPEN_HELP } from '../actions/types'
+import { UPDATE_ASM, OPEN_HELP, START_COMPILE, STOP_COMPILE } from '../actions/types'
 
 const initialState = {
   asm: null,
-  article: null
+  article: null,
+  isCompiling: true
 };
 
 export default (state = initialState, action) => {
   switch (action.type) {
+    case START_COMPILE:
+      return { ...state, isCompiling: true };
+
+    case STOP_COMPILE:
+      return { ...state, isCompiling: false };
+
     case UPDATE_ASM:
       return { ...state, asm: action.asm };
 
