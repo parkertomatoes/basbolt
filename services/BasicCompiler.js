@@ -71,7 +71,7 @@ export default class BasicCompiler {
     text.style.cssText = "white-space: pre; font: 14px monospace; line-height: 14px";
     this.container.appendChild(text);
     const canvas = document.createElement('canvas');
-    this.container.style.display = 'none';
+    //this.container.style.display = 'none';
     this.container.appendChild(canvas);
     document.body.appendChild(this.container);
 
@@ -135,7 +135,7 @@ export default class BasicCompiler {
         options.onBegin();
       try {
         await this.serial.queue(() => {
-          this.emulator.serial0_send(`compile\nC:\\JOB.BAS\n${code.length}\n`);
+          this.emulator.serial0_send(`compile\n${options.compiler}\nC:\\JOB.BAS\n${code.length}\n`);
         }, 'ready\r\n');
 
         // send source

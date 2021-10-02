@@ -1,5 +1,5 @@
 import parseLst from '../services/LstParser';
-import { UPDATE_ASM, OPEN_HELP, START_COMPILE, STOP_COMPILE } from './types';
+import { UPDATE_ASM, OPEN_HELP, START_COMPILE, STOP_COMPILE, SELECT_COMPILER, UPDATE_SOURCE } from './types';
 
 export function updateAsm(asm) {
   return { type: UPDATE_ASM, asm };
@@ -13,18 +13,42 @@ function stopCompile() {
   return { type: STOP_COMPILE };
 }
 
-export function compile(code) {
-  return async (dispatch, _, { compiler }) => {
+export function compile() {
+  return async (dispatch, getState, { compiler }) => {
+    const state = getState();
     const options = {
       onBegin: () => dispatch(startCompile()),
-      onEnd: () => dispatch(stopCompile())
+      onEnd: () => dispatch(stopCompile()),
+      compiler: state.compiler
     };
-    const result = await compiler.compile(code, options);
+    const result = await compiler.compile(state.source, options);
     if (!result.canceled && result.lst) {
       const asm = parseLst(result.lst);
       dispatch(updateAsm(asm));
     }
+  }
+}
+
+function pushUpdateSource(source) {
+  return { type: UPDATE_SOURCE, source };
+}
+
+export function updateSource(source, compiler) {
+  return dispatch => {
+    dispatch(pushUpdateSource(source));
+    dispatch(compile());
   };
+}
+
+function pushSelectCompiler(compiler) {
+  return { type: SELECT_COMPILER, compiler };
+}
+
+export function selectCompiler(compiler) {
+  return dispatch => {
+    dispatch(pushSelectCompiler(compiler));
+    dispatch(compile());
+  }
 }
 
 export const DEFAULT_ARTICLE =  '#topic-qb45qck-T0000';

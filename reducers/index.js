@@ -1,9 +1,11 @@
-import { UPDATE_ASM, OPEN_HELP, START_COMPILE, STOP_COMPILE } from '../actions/types'
+import { UPDATE_ASM, OPEN_HELP, START_COMPILE, STOP_COMPILE, SELECT_COMPILER, UPDATE_SOURCE } from '../actions/types'
 
 const initialState = {
   asm: null,
   article: null,
-  isCompiling: true
+  isCompiling: true,
+  compiler: 'QB45',
+  source: 'PRINT "HELLO WORLD"'
 };
 
 export default (state = initialState, action) => {
@@ -20,6 +22,12 @@ export default (state = initialState, action) => {
     case OPEN_HELP:
       // use a new object each time so that triggers an effect each dispatch
       return { ...state, article: { fragment: action.article } };
+
+    case SELECT_COMPILER:
+      return { ...state, compiler: action.compiler };
+
+    case UPDATE_SOURCE:
+      return { ...state, source: action.source };
       
     default:
       return state;

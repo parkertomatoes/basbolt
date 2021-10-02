@@ -35,22 +35,26 @@ h1, em, .dock-tab {
   display: grid;
   height: 100%;
   grid-template-rows: auto 1fr;
-  grid-template-areas: 
-    "compiling-message"
-    "asm-blocks";
 }
 
-.asm-view-compiling {
-  grid-area: compiling-message;
-  text-align: center;
+.asm-view-toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  column-gap: 1em;
+  align-items: center;
+
   padding: 1em;
   font: 12px sans-serif;
   color: gray;
   background-color: #fafafd;
 }
 
+.asm-view-compiling {
+  text-align: center;
+}
+
 .asm-view > :last-child {
-  grid-area: asm-blocks;
+  height: 100%;
 }
 
 .sourceError {
