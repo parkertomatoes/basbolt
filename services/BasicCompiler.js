@@ -81,7 +81,7 @@ export default class BasicCompiler {
       screen_container: this.container,
       bios: { url: "seabios.bin" },
       vga_bios: { url: "vgabios.bin" },
-      hda: { 
+      fda: { 
         "url": "basbolt.img",
         "async": true
       },
@@ -135,7 +135,7 @@ export default class BasicCompiler {
         options.onBegin();
       try {
         await this.serial.queue(() => {
-          this.emulator.serial0_send(`compile\n${options.compiler}\nC:\\JOB.BAS\n${code.length}\n`);
+          this.emulator.serial0_send(`compile\n${options.compiler}\nA:\\JOB.BAS\n${code.length}\n`);
         }, 'ready\r\n');
 
         // send source
