@@ -36,7 +36,7 @@ export default function Layout() {
           id,
           cached: true,
           title: 'editor',
-          content: <Editor defaultSource={`PRINT "HELLO WORLD!"`} />
+          content: <Editor />
         }
       
       case 'asm':

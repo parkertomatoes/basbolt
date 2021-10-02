@@ -1,5 +1,6 @@
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useRef, useEffect, useState } from 'react';
+import { selectCompiler } from '../actions/index';
 const MonacoEditor = monaco_react.default;
 
 const options = {
@@ -87,8 +88,10 @@ function useElipsisTimer(isActive, message) {
 export default function AsmView() {
   const asm = useSelector(({ asm }) => asm);
   const isCompiling = useSelector(({ isCompiling }) => isCompiling);
+  const compiler = useSelector(({ compiler }) => compiler);
   const compilingMessage = useElipsisTimer(isCompiling, 'Compiling')
   const [editorReady, setEditorReady] = useState(false);
+  const dispatch = useDispatch();
   const monacoRef = useRef(null);
   const decorRef = useRef([]);
 
@@ -108,7 +111,16 @@ export default function AsmView() {
 
   return (
     <div className="asm-view">
-      { isCompiling && <div className="asm-view-compiling">{compilingMessage}</div> }
+      <div className="asm-view-toolbar">
+        <div className="asm-view-compiling">{isCompiling ? compilingMessage : ''}</div>
+        <div className="asm-view-label">Compiler:</div>
+        <select value={compiler} onChange={e => dispatch(selectCompiler(e.currentTarget.value))}>
+          <option value="QB40">QuickBASIC 4.0</option>
+          <option value="QB45">QuickBASIC 4.5</option>
+          <option value="PDS71">Professional Development System (PDS) 7.1</option>
+          <option value="VBD10">Visual BASIC (VB) For DOS 1.0</option>
+        </select>
+      </div>
       <MonacoEditor
         theme="vs-light"
         options={options}

@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useRef, useEffect, useState } from 'react';
-import { compile, openHelp } from '../actions';
+import { compile, updateSource, openHelp } from '../actions';
 
 const MonacoEditor = monaco_react.default;
 
@@ -40,16 +40,17 @@ function getErrorMarkers(asm) {
   }));
 }
 
-export default function Editor({ defaultSource }) {
+export default function Editor() {
   const dispatch = useDispatch();
   const asm = useSelector(({ asm }) => asm);
+  const source = useSelector(({ source }) => source);
   const monacoRef = useRef(null);
   const decorRef = useRef([]);
   const [editorReady, setEditorReady] = useState(false);
 
   useEffect(() => {
     // Effect: component has mounted, compile default source
-    dispatch(compile(defaultSource));
+    dispatch(compile());
   }, []);
 
   useEffect(() => {
@@ -82,12 +83,12 @@ export default function Editor({ defaultSource }) {
     <MonacoEditor
       theme="vs-light"
       options={options}
-      defaultValue={defaultSource}
-      onChange={newValue => dispatch(compile(newValue))}
+      onChange={newValue => dispatch(updateSource(newValue))}
+      value={source}
       onMount={(editor, monaco) => {
         monacoRef.current = { editor, monaco };
         setEditorReady(true);
-        const model = monaco.editor.createModel(defaultSource, "vb");
+        const model = monaco.editor.createModel(source, "vb");
         model.setEOL(1);
         editor.setModel(model);
         
