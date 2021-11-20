@@ -15,10 +15,7 @@ export function encode(text) {
       result[i] = code;
     } else {
       const cp437Code = encodeMap[c];
-      if (cp437Code === undefined) {
-        throw new Error(`cannot encode '${c}' (code ${code}) for DOS (CP437)`);
-      }
-      result[i] = cp437Code;
+      result[i] = cp437Code ?? 0x3F; // '?'
     }
     i++;
   }
