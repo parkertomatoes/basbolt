@@ -82,8 +82,7 @@ export default class BasicCompiler {
       bios: { url: "seabios.bin" },
       vga_bios: { url: "vgabios.bin" },
       fda: { 
-        "url": "basbolt.img",
-        "async": true
+        "url": "basbolt.img"
       },
       autostart: true,
     });
